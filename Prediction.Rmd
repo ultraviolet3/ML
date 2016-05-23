@@ -30,7 +30,8 @@ In short the results of the analysis from data set provided for this purpose, it
   library(ParallelForest)
   library(doParallel)
 ```
-**Loading data:** Downloading both train and test data
+
+**Loading data** Downloading both train and test data
 ```{r echo=TRUE,message=FALSE, warning=FALSE,comment=" ",tidy=TRUE,strip.white=FALSE,collapse=TRUE}
   Loading=function(trainf,testf) {
     wd<<-getwd()
@@ -64,6 +65,7 @@ In short the results of the analysis from data set provided for this purpose, it
     colnames(pstat)=c("#-of zero var","#-near zero var")
     print(pstat)}
 ```
+
 **Training data:** Function to create train & test folds. Partitioning the training data into 55% training data and 45% as test data. Activating parallel processing of the training process to accommodate the data load. Using Random forest to train the data for prediction.
 ```{r echo=TRUE,message=FALSE, warning=FALSE,comment=" ",tidy=TRUE,strip.white=FALSE,collapse=TRUE}
   traindata=function(pdata=data1) {
@@ -107,6 +109,8 @@ predictdata()
 varImp(tread)
 ```
 **Results:** When comparing the results of the predicted value to the actual value in the training data set, the predictions match one for one. This seems to indicate that the final model-"mtry2", is a good fit. Further testing the model with the test data provided results with sensitivity and specificity values close to that of the training set. The variables that contributed to predicting the values for test and the training values, have the same level of importance in both data sets. The model thus created seems to be stable.
+*Out of sample error is:* 1- Accuracy= 1-1= 0
+
 **Environment:**
 1. OS: Windows 10; Tool: R version 3.2.5; R Studio version 0.99.893; Publishing tool: RPubs, HTML
 4. Data: With thanks to source: http://groupware.les.inf.puc-rio.br/har. Reference: Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013. Read more: http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises#ixzz49Qq0gDZE 
