@@ -115,7 +115,7 @@ $(document).ready(function () {
 <p><strong>Executive Summary</strong> Objective of this analysis is to quantify how effectively the 6 participants of this research used the accelerometer belt, forearm, arm, and dumbell equipments.</p>
 <p>In short the results of the analysis from data set provided for this purpose, it seems that based on the data provided only accelerometer belt_z, dumbbell_x, dumbbell_y, dumbbell_z, forearm_x are the key variables amongst other non-accelerometer variable. To quantify the accelerometer variables forming part of the model contribution can be said to be in the range of of 37% to 52%.</p>
 <p><strong>Assumption</strong>: The results of the model is entirely based on the assumption that the values for the outcome variable (Classe) in the training data set was determined with at least 95% accuracy and the probability of type 1 &amp; type 2 errors were minimal if not zero.</p>
-<p><strong>Loading data:</strong> Downloading both train and test data</p>
+<p><strong>Loading data</strong> Downloading both train and test data</p>
 <pre class="r"><code>Loading = function(trainf, testf) {
     wd &lt;&lt;- getwd()
     fil = trainf
@@ -123,25 +123,26 @@ $(document).ready(function () {
     file = paste(wd, fil, sep = &quot;/&quot;)
     file1 = paste(wd, fil1, sep = &quot;/&quot;)
     if (!file.exists(file)) {
-        download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;,
+        download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;, 
             file)
     }
-
+    
     if (!file.exists(file1)) {
-        download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;,
+        download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;, 
             file1)
     }
-    trainfull &lt;&lt;- data.frame(read.csv(file, header = T, sep = &quot;,&quot;, stringsAsFactors = T,
+    trainfull &lt;&lt;- data.frame(read.csv(file, header = T, sep = &quot;,&quot;, stringsAsFactors = T, 
         na.strings = c(&quot;?&quot;, NA, &quot;NA&quot;, &quot; &quot;, NULL, &quot;#DIV/0!&quot;), blank.lines.skip = T))
-    testfull &lt;&lt;- data.frame(read.csv(file1, header = T, sep = &quot;,&quot;, stringsAsFactors = T,
-        na.strings = c(&quot;?&quot;, NA, &quot;NA&quot;, &quot; &quot;, NULL, &quot;#DIV/0!&quot;), blank.lines.skip = T))}</code></pre>
+    testfull &lt;&lt;- data.frame(read.csv(file1, header = T, sep = &quot;,&quot;, stringsAsFactors = T, 
+        na.strings = c(&quot;?&quot;, NA, &quot;NA&quot;, &quot; &quot;, NULL, &quot;#DIV/0!&quot;), blank.lines.skip = T))
+}</code></pre>
 <p><strong>Preprocessing train:</strong> Function to preprocess the data - Removing NA, data, time fields and total fields as they do not bear any value in determining the predictive model. - Determining the Zero &amp; near zero values</p>
 <pre class="r"><code>pprocess = function(data) {
     pstat = data.frame()
     ncol(data)
     data = data[, !apply(data, 2, function(x) any(is.na(x)))]
-    data1 &lt;&lt;- subset(data, select = -c(X, raw_timestamp_part_1, raw_timestamp_part_2,
-        cvtd_timestamp, new_window, num_window, total_accel_arm, total_accel_belt,
+    data1 &lt;&lt;- subset(data, select = -c(X, raw_timestamp_part_1, raw_timestamp_part_2, 
+        cvtd_timestamp, new_window, num_window, total_accel_arm, total_accel_belt, 
         total_accel_dumbbell, total_accel_forearm))
     ncols &lt;- ncol(data1)
     row = nrow(data1)
@@ -150,28 +151,31 @@ $(document).ready(function () {
     pstat = length(which(datanzv$zeroVar == &quot;TRUE&quot;))
     pstat = cbind(pstat, length(which(datanzv$nzv %in% &quot;TRUE&quot;)))
     colnames(pstat) = c(&quot;#-of zero var&quot;, &quot;#-near zero var&quot;)
-    print(pstat)}</code></pre>
-<p><strong>Training data:</strong></a> Function to create train &amp; test folds. Partitioning the training data into 55% training data and 45% as test data. Activating parallel processing of the training process to accommodate the data load. Using Random forest to train the data for prediction.</p>
+    print(pstat)
+}</code></pre>
+<p>**Training <a href="data:**" class="uri">data:**</a> Function to create train &amp; test folds. Partitioning the training data into 55% training data and 45% as test data. Activating parallel processing of the training process to accommodate the data load. Using Random forest to train the data for prediction.</p>
 <pre class="r"><code>traindata = function(pdata = data1) {
     gc()
     mkcluster = makeCluster(detectCores() - 1, methods = FALSE)
     registerDoParallel(mkcluster)
-    trctrl = trainControl(classProbs = TRUE, savePredictions = TRUE, allowParallel = TRUE,
+    trctrl = trainControl(classProbs = TRUE, savePredictions = TRUE, allowParallel = TRUE, 
         method = &quot;oob&quot;)
-
+    
     trainfold = createDataPartition(data1$classe, 10, p = 0.55, list = FALSE)
     train = data1[trainfold, ]
     test = data1[-trainfold, ]
-
+    
     tread &lt;&lt;- train(classe ~ ., data = train, method = &quot;rf&quot;, trControl = trctrl)
     stopCluster(mkcluster)
     tread$bestTune
-    tread$results}</code></pre>
+    tread$results
+}</code></pre>
 <p><strong>Modelling &amp; predicting:</strong> Function to predict data using the trained data as the base.</p>
 <pre class="r"><code>predictdata = function(sdata = data1) {
     predictdata &lt;- predict(tread, sdata)
     sdata = cbind(sdata, predictdata)
-    matrix = confusionMatrix(predictdata, sdata$predictdata)}</code></pre>
+    matrix = confusionMatrix(predictdata, sdata$predictdata)
+}</code></pre>
 <p><strong>Predicting using the models:</strong> Running tests on training data to fit a model and then on the test data. Storing the predicted values in the variable “predictdata”</p>
 <pre class="r"><code>Loading(&quot;pml_training.csv&quot;, &quot;pml_testing.csv&quot;)
 # Processing &amp; training model on training dataset
@@ -181,37 +185,37 @@ pprocess(trainfull)
 traindata(trainfull)
      Accuracy     Kappa mtry
   1 1.0000000 1.0000000    2
-  2 1.0000000 1.0000000   27
-  3 0.9999907 0.9999883   53
+  2 0.9999907 0.9999883   27
+  3 1.0000000 1.0000000   53
 # Predicting training dataset, results of the trained model
 predictdata()
 # Key variables that contribute to the model and predictions
 varImp(tread)
   rf variable importance
-
+  
     only 20 most important variables shown (out of 53)
-
+  
                     Overall
   roll_belt          100.00
-  yaw_belt            84.05
-  magnet_dumbbell_z   70.01
-  pitch_belt          66.80
-  magnet_dumbbell_y   66.22
-  pitch_forearm       64.58
-  roll_forearm        57.57
-  magnet_dumbbell_x   56.67
-  magnet_belt_y       51.68
-  accel_belt_z        50.49
-  accel_dumbbell_y    50.47
-  magnet_belt_z       49.78
-  accel_dumbbell_z    47.28
-  roll_dumbbell       46.88
-  roll_arm            42.80
-  accel_forearm_x     39.56
-  gyros_belt_z        38.06
-  accel_arm_x         37.93
-  accel_dumbbell_x    37.81
-  magnet_arm_x        37.40
+  yaw_belt            85.96
+  magnet_dumbbell_z   75.30
+  pitch_belt          68.71
+  magnet_dumbbell_y   67.88
+  pitch_forearm       66.07
+  roll_forearm        60.00
+  magnet_dumbbell_x   59.45
+  accel_belt_z        56.10
+  accel_dumbbell_y    53.56
+  magnet_belt_y       50.39
+  magnet_belt_z       50.26
+  roll_dumbbell       49.02
+  accel_dumbbell_z    46.90
+  roll_arm            46.28
+  accel_forearm_x     41.14
+  accel_dumbbell_x    40.77
+  yaw_dumbbell        39.51
+  gyros_belt_z        38.33
+  magnet_arm_y        37.56
 # Processing test dataset
 pprocess(testfull)
        #-of zero var #-near zero var
@@ -221,31 +225,31 @@ predictdata()
 # Key variables that contribute to the model and predictions
 varImp(tread)
   rf variable importance
-
+  
     only 20 most important variables shown (out of 53)
-
+  
                     Overall
   roll_belt          100.00
-  yaw_belt            84.05
-  magnet_dumbbell_z   70.01
-  pitch_belt          66.80
-  magnet_dumbbell_y   66.22
-  pitch_forearm       64.58
-  roll_forearm        57.57
-  magnet_dumbbell_x   56.67
-  magnet_belt_y       51.68
-  accel_belt_z        50.49
-  accel_dumbbell_y    50.47
-  magnet_belt_z       49.78
-  accel_dumbbell_z    47.28
-  roll_dumbbell       46.88
-  roll_arm            42.80
-  accel_forearm_x     39.56
-  gyros_belt_z        38.06
-  accel_arm_x         37.93
-  accel_dumbbell_x    37.81
-  magnet_arm_x        37.40</code></pre>
-<p><strong>Results:</strong> When comparing the results of the predicted value to the actual value in the training data set, the predictions match one for one. This seems to indicate that the final model-“mtry2”, is a good fit. Further testing the model with the test data provided results with sensitivity and specificity values close to that of the training set. The variables that contributed to predicting the values for test and the training values, have the same level of importance in both data sets. The model thus created seems to be stable.
+  yaw_belt            85.96
+  magnet_dumbbell_z   75.30
+  pitch_belt          68.71
+  magnet_dumbbell_y   67.88
+  pitch_forearm       66.07
+  roll_forearm        60.00
+  magnet_dumbbell_x   59.45
+  accel_belt_z        56.10
+  accel_dumbbell_y    53.56
+  magnet_belt_y       50.39
+  magnet_belt_z       50.26
+  roll_dumbbell       49.02
+  accel_dumbbell_z    46.90
+  roll_arm            46.28
+  accel_forearm_x     41.14
+  accel_dumbbell_x    40.77
+  yaw_dumbbell        39.51
+  gyros_belt_z        38.33
+  magnet_arm_y        37.56</code></pre>
+<p><strong>Results:</strong> When comparing the results of the predicted value to the actual value in the training data set, the predictions match one for one. This seems to indicate that the final model-“mtry2”, is a good fit. Further testing the model with the test data provided results with sensitivity and specificity values close to that of the training set. The variables that contributed to predicting the values for test and the training values, have the same level of importance in both data sets. The model thus created seems to be stable. <em>Out of sample error is:</em> 1- Accuracy= 1-1= 0</p>
 <p><strong>Environment:</strong> 1. OS: Windows 10; Tool: R version 3.2.5; R Studio version 0.99.893; Publishing tool: RPubs, HTML 4. Data: With thanks to source: <a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a>. Reference: Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013. Read more: <a href="http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises#ixzz49Qq0gDZE" class="uri">http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises#ixzz49Qq0gDZE</a> 6. Analyst: Uma Venkataramani; Date of Analysis: May 2016</p>
 
 
